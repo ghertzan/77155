@@ -8,7 +8,7 @@ router.get("/", async (req, res) => {
   res.status(200).json({ message: "Todos los usuarios", payload: users });
 });
 router.get("/:id", async (req, res) => {
-   const id= req.params.id
+  const id = req.params.id;
   res.status(200).json({ message: "Un usuario" });
 });
 // post
