@@ -1,12 +1,12 @@
 import { Router } from "express";
-
+import { createHash, isValidadPassword } from "../utils/index.js";
 import userModel from "../models/users.model.js";
 
 const router = Router();
 // rutas post
 router.post("/register", async (req, res) => {
   const { first_name, last_name, email, password } = req.body;
-
+  const password_hash = createHash(password);
   try {
     const userExist = await userModel.findOne({ email });
     if (userExist) {
@@ -16,7 +16,7 @@ router.post("/register", async (req, res) => {
       first_name,
       last_name,
       email,
-      password,
+      password: password_hash,
     };
     await userModel.create(newUser);
 
@@ -33,9 +33,17 @@ router.post("/login", async (req, res) => {
   try {
     const userExist = await userModel.findOne({ email: email });
     if (userExist) {
-      //  si existe el usuario creamos la sesión ¿Cómo? 🤷‍♀️
-      // ¿Validamos el password?
-      res.redirect("/profile");
+      const isValid = isValidadPassword(password, userExist.password);
+      if (isValid) {
+        req.session.user = {
+          first_name: userExist.first_name,
+          last_name: userExist.last_name,
+          email: userExist.email,
+        };
+        res.redirect("/profile");
+      } else {
+        res.status(401).json({ message: "Error de credenciales" });
+      }
     }
   } catch (error) {
     res
@@ -44,13 +52,26 @@ router.post("/login", async (req, res) => {
   }
 });
 
-
+// recupero de pass
+router.post("/recupero", async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    // validamos si recibimos todos los campos
+    const userFound = await userModel.findOne({ email });
+    const password_hash = createHash(password);
+    userFound.password = password_hash;
+    await userFound.save();
+    res.redirect("/login");
+  } catch (error) {
+    // agregar respuesta
+  }
+});
 
 // logout
 router.post("/logout", (req, res, next) => {
   if (req.session.user) {
-  // Destruimos la session
+    // Destruimos la session
   }
-})
-  
+});
+
 export default router;

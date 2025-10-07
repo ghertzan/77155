@@ -11,10 +11,14 @@ router.get("/login", (req, res) => {
 });
 
 router.get("/profile", (req, res) => {
-  // Si no existe la sesion debemos redirigir al login. Una manera básica de 'proteger' esta ruta
-  const user = {};
+  // console.log(req.session.user);
+  const user =  req.session.user ; 
+  console.log(user);
 
   res.render("profile", { title: "PROFILE", user: user });
 });
 
+router.get("/recupero", (req, res) => {
+  res.render("recupero", { title: "Recuperar password" });
+});
 export default router;
